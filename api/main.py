@@ -18,7 +18,7 @@ def gemini_chat():
         return response
     
     except Exception as e:
-        print(e)
+        print("gemini_chat:",e)
         return None
 
 if __name__ == '__main__':

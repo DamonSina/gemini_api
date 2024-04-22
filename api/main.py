@@ -30,7 +30,7 @@ def gemini_chat(data: dict):
         text=response.text
         response = {"content": text}
         for message in chat.history:
-            print(f'**{message.role}**: {message.parts[0].text}')
+            print(f'**{message.role}**')
         return response
     except Exception as e:
         print("gemini_chat:",e)

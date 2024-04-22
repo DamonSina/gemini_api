@@ -20,8 +20,7 @@ def gemini_chat(data: dict):
     api_key= data.get('api_key')
     history=data.get('history')
     if history is None:
-        history=[]
-    print("history:",history)    
+        history=[]  
     try:
         # genai.configure(api_key=api_key,transport='rest')
         genai.configure(api_key=api_key)
@@ -30,6 +29,8 @@ def gemini_chat(data: dict):
         response = chat.send_message(prompt)
         text=response.text
         response = {"content": text}
+        for message in chat.history:
+            print(f'**{message.role}**: {message.parts[0].text}')
         return response
     except Exception as e:
         print("gemini_chat:",e)

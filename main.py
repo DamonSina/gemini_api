@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-# @Author   : Eurkon
-# @Date     : 2022/3/8 14:17
-
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from scrapy.utils.project import get_project_settings
-from sse_starlette.sse import EventSourceResponse
 import google.generativeai as genai
 import json
 import time
@@ -19,66 +13,48 @@ app.add_middleware(CORSMiddleware,
                    allow_headers=["*"]
                    )
 
-settings = get_project_settings()
-
 
 @app.post("/gemini/chat", tags=["API"], summary="GEMINI")
 def gemini_chat(data: dict):
     prompt = data.get('prompt')
     api_key= data.get('api_key')
+    history=data.get('history')
+    if history is None:
+        history=[]
     try:
+        # genai.configure(api_key=api_key,transport='rest')
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro')
-        chat = model.start_chat(history=[])
+        chat = model.start_chat(history=history)
         response = chat.send_message(prompt)
         text=response.text
         response = {"content": text}
         return response
-    
     except Exception as e:
-        print(e)
+        print("gemini_chat:",e)
         return None
 
-@app.post("/gemini/chat_list", tags=["API"], summary="GEMINI")
-def gemini_chat_list(data_list: list):
-    #print('chat data:',data)
-    return_list=[]
-    for data in data_list:
-        response=gemini_chat(data)
-        return_list.append(response)
-    return return_list 
-       
+@app.post("/gemini/chat_v2", tags=["API"], summary="GEMINI")
+def gemini_chat(data: dict):
+    api_key= data.get('api_key')
+    prompt_1 = data.get('prompt_1')
+    prompt_2 = data.get('prompt_2')
+    try:
+        # genai.configure(api_key=api_key,transport='rest')
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-pro')
+        chat = model.start_chat(history=[])
+        response_1 =chat.send_message(prompt_1)
+        text_1=response_1.text
 
+        response_2 =chat.send_message(prompt_2)
+        text_2=response_2.text
 
-@app.post('/gemini/chat_stream', tags=["API"], summary="GEMINI")
-async def chat_stream(request: Request):
-    json_post_raw = await request.json()
-    json_post = json.dumps(json_post_raw)
-    #print('chat_stream json_post_raw:',json_post)
-    json_post_list = json.loads(json_post)
-    prompt = json_post_list.get('prompt')
-
-    results=call_chat_stream(prompt)
-
-
-    return EventSourceResponse(results)
-
-async def call_chat_stream(prompt):
-    genai.configure(api_key="AIzaSyDO6L-EuN0Nkd2XlhEMTp9O3ERUSQ2vWNg")
-    model = genai.GenerativeModel('gemini-pro')
-    chat = model.start_chat(history=[])
-    response = chat.send_message(prompt, stream=True)
-    for chunk in response:
-        text=chunk.text
-        response = {"content": text}
-        #print('response:',response)
-        yield json.dumps(response)
-        
-
-async def request(session, url):
-    async with session.get(url) as response:
-        return await response.text()
-
-
+        response = {"content_1": text_1,"content_2": text_2}
+        return response
+    except Exception as e:
+        print("gemini_chat:",e)
+        return None
+    
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1",workers=2)
+    uvicorn.run("main:app", host="127.0.0.1",workers=1)

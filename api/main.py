@@ -30,7 +30,7 @@ def gemini_chat(data: dict):
         response = chat.send_message(prompt)
         text=response.text
         response = {"content": text}
-        return response,
+        return response
     except Exception as e:
         print("gemini_chat:",e)
         return None

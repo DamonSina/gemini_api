@@ -29,6 +29,7 @@ def gemini_chat(data: dict):
         response = chat.send_message(prompt)
         text=response.text
         response = {"content": text}
+        print("history:",chat.history)
         return response
     except Exception as e:
         print("gemini_chat:",e)
